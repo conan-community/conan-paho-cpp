@@ -15,7 +15,7 @@ of Things (IoT)"""
     options = {"shared": [True, False],
                "SSL": [True, False],
                "fPIC": [True, False]}
-    default_options = "shared=False", "SSL=False"
+    default_options = "shared=False", "SSL=False", "fPIC=True"
     generators = "cmake"
     exports = "LICENSE", "cmakelists.patch"
     requires = "paho-c/1.2.0@conan/stable"
