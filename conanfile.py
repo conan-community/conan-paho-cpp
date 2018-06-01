@@ -12,15 +12,21 @@ and MQTT-SN messaging protocols aimed at new, existing, and emerging application
 of Things (IoT)"""
     url = "https://github.com/conan-community/conan-paho-cpp"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "SSL": [True, False]}
+    options = {"shared": [True, False],
+               "SSL": [True, False],
+               "fPIC": [True, False]}
     default_options = "shared=False", "SSL=False"
     generators = "cmake"
     exports = "LICENSE", "cmakelists.patch"
     requires = "paho-c/1.2.0@conan/stable"
 
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
+
     def configure(self):
+        self.options["paho-c"].async = True
         self.options["paho-c"].SSL = self.options.SSL
-        self.options["paho-c"].asynchronous = True
 
     @property
     def source_subfolder(self):
@@ -35,6 +41,9 @@ of Things (IoT)"""
                               """project(\"paho-mqtt-cpp\" LANGUAGES CXX)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()""")
+        tools.replace_in_file("cmakelists.patch",
+                              "sources/src/CMakeLists.txt",
+                              "%s/src/CMakeLists.txt" % self.source_subfolder)
         tools.patch(patch_file="cmakelists.patch")
 
     def build(self):
