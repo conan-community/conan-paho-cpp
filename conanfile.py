@@ -23,9 +23,9 @@ of Things (IoT)"""
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
+            del self.options.shared
 
     def configure(self):
-        self.options["paho-c"].async = True
         self.options["paho-c"].SSL = self.options.SSL
 
     @property
@@ -50,8 +50,13 @@ conan_basic_setup()""")
         cmake = CMake(self)
         cmake.definitions["PAHO_BUILD_DOCUMENTATION"] = False
         cmake.definitions["PAHO_BUILD_SAMPLES"] = False
-        cmake.definitions["PAHO_BUILD_STATIC"] = not self.options.shared
-        cmake.definitions["PAHO_BUILD_SHARED"] = self.options.shared
+        # https://github.com/eclipse/paho.mqtt.cpp/blob/16573488fa699ac94d920024736974a2206b794b/CMakeLists.txt#L50
+        if self.settings.os == "Windows":
+            cmake.definitions["PAHO_BUILD_STATIC"] = True
+            cmake.definitions["PAHO_BUILD_SHARED"] = False
+        else:
+            cmake.definitions["PAHO_BUILD_STATIC"] = not self.options.shared
+            cmake.definitions["PAHO_BUILD_SHARED"] = self.options.shared
         cmake.definitions["PAHO_WITH_SSL"] = self.options.SSL
         cmake.configure(source_folder=self.source_subfolder)
         cmake.build()

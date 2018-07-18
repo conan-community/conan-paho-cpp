@@ -41,6 +41,8 @@ if __name__ == "__main__":
                 break
         builder.builds = filtered_builds
 
-    builder.add_common_builds(shared_option_name="paho-cpp:shared",
-                              dll_with_static_runtime=True)
+    if platform.system() == "Windows":
+        builder.add_common_builds()
+    else:
+        builder.add_common_builds(shared_option_name="paho-cpp:shared")
     builder.run()
