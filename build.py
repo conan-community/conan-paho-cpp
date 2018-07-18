@@ -41,6 +41,7 @@ if __name__ == "__main__":
                 break
         builder.builds = filtered_builds
 
+    print("SYSTEM:", platform.system())
     if platform.system() == "Windows":
         builder.add_common_builds()
     else:
