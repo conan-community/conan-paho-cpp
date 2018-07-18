@@ -41,9 +41,8 @@ if __name__ == "__main__":
                 break
         builder.builds = filtered_builds
 
-    print("SYSTEM:", platform.system())
     if platform.system() == "Windows":
-        builder.add_common_builds()
+        builder.add_common_builds(shared_option_name=False)
     else:
         builder.add_common_builds(shared_option_name="paho-cpp:shared")
     builder.run()
