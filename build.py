@@ -1,5 +1,5 @@
 from conan.packager import ConanMultiPackager
-import os, re
+import os, platform, re
 
 
 def get_value_from_recipe(search_string):
