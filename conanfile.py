@@ -11,6 +11,8 @@ class PahocppConan(ConanFile):
     homepage = "https://github.com/eclipse/paho.mqtt.cpp"
     description = "The open-source client implementations of MQTT and MQTT-SN"
     url = "https://github.com/conan-community/conan-paho-cpp"
+    author = "Conan Communty"
+    topics = ("conan", "paho-cpp", "paho", "mqtt", "mqtt-sn")
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False],
                "SSL": [True, False],
