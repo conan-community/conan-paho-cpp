@@ -1,75 +1,64 @@
+# -*- coding: utf-8 -*-
 import os
 from conans import ConanFile, CMake, tools
+from conans.errors import ConanInvalidConfiguration
 
 
 class PahocppConan(ConanFile):
     name = "paho-cpp"
-    version = "1.0.0"
+    version = "1.0.1"
     license = "EPL-1.0"
     homepage = "https://github.com/eclipse/paho.mqtt.cpp"
-    description = """The Eclipse Paho project provides open-source client implementations of MQTT
-and MQTT-SN messaging protocols aimed at new, existing, and emerging applications for the Internet
-of Things (IoT)"""
+    description = "The open-source client implementations of MQTT and MQTT-SN"
     url = "https://github.com/conan-community/conan-paho-cpp"
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False],
                "SSL": [True, False],
                "fPIC": [True, False]}
-    default_options = "shared=False", "SSL=False", "fPIC=True"
+    default_options = {"shared": False, "SSL": False, "fPIC": True}
     generators = "cmake"
-    exports = "LICENSE", "cmakelists.patch"
+    exports = "LICENSE"
+    exports_sources = ["CMakeLists.txt", "PahoMqttCConfig.cmake"]
     requires = "paho-c/1.2.0@conan/stable"
 
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
-            del self.options.shared
-
-    def configure(self):
         self.options["paho-c"].SSL = self.options.SSL
 
+    def configure(self):
+        if self.settings.os == "Windows" and self.options.shared:
+            raise ConanInvalidConfiguration("Paho cpp can not be built as shared on Windows.")
+
     @property
-    def source_subfolder(self):
+    def _source_subfolder(self):
         return "sources"
 
     def source(self):
-        tools.get("%s/archive/v%s.zip" % (self.homepage, self.version))
-        os.rename("paho.mqtt.cpp-%s" % self.version, self.source_subfolder)
-        cmakelists_path = "%s/CMakeLists.txt" % self.source_subfolder
-        tools.replace_in_file(cmakelists_path,
-                              "project(\"paho-mqtt-cpp\" LANGUAGES CXX)",
-                              """project(\"paho-mqtt-cpp\" LANGUAGES CXX)
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()""")
-        tools.replace_in_file("cmakelists.patch",
-                              "sources/src/CMakeLists.txt",
-                              "%s/src/CMakeLists.txt" % self.source_subfolder)
-        tools.patch(patch_file="cmakelists.patch")
+        sha256 = "42faf223bf78300eaaa8fa7d0e1bc039ff5de2890a392b83973f1be59aa68ea3"
+        tools.get("%s/archive/v%s.zip" % (self.homepage, self.version), sha256=sha256)
+        os.rename("paho.mqtt.cpp-%s" % self.version, self._source_subfolder)
 
-    def build(self):
+    def _configure_cmake(self):
         cmake = CMake(self)
         cmake.definitions["PAHO_BUILD_DOCUMENTATION"] = False
         cmake.definitions["PAHO_BUILD_SAMPLES"] = False
-        # https://github.com/eclipse/paho.mqtt.cpp/blob/16573488fa699ac94d920024736974a2206b794b/CMakeLists.txt#L50
-        if self.settings.os == "Windows":
-            cmake.definitions["PAHO_BUILD_STATIC"] = True
-            cmake.definitions["PAHO_BUILD_SHARED"] = False
-        else:
-            cmake.definitions["PAHO_BUILD_STATIC"] = not self.options.shared
-            cmake.definitions["PAHO_BUILD_SHARED"] = self.options.shared
+        cmake.definitions["PAHO_BUILD_STATIC"] = not self.options.shared
+        cmake.definitions["PAHO_BUILD_SHARED"] = self.options.shared
         cmake.definitions["PAHO_WITH_SSL"] = self.options.SSL
-        cmake.configure(source_folder=self.source_subfolder)
+        cmake.definitions["CMAKE_PREFIX_PATH"] = self.build_folder
+        cmake.configure()
+        return cmake
+
+    def build(self):
+        cmake = self._configure_cmake()
         cmake.build()
 
     def package(self):
-        self.copy("edl-v10", src=self.source_subfolder, dst="licenses", keep_path=False)
-        self.copy("epl-v10", src=self.source_subfolder, dst="licenses", keep_path=False)
-        self.copy("notice.html", src=self.source_subfolder, dst="licenses", keep_path=False)
-        self.copy("*.h", dst="include", src="%s/src" % self.source_subfolder)
-        pattern = "*paho-mqttpp3"
-        for extension in [".a", ".dll.a", ".lib", ".dll", ".dylib", ".*.dylib", ".so*"]:
-            self.copy(pattern + extension, dst="bin" if extension.endswith("dll") else "lib",
-                      keep_path=False)
+        for license_file in ["edl-v10", "epl-v10", "notice.html"]:
+            self.copy(license_file, src=self._source_subfolder, dst="licenses")
+        cmake = self._configure_cmake()
+        cmake.install()
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
