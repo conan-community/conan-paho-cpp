@@ -7,7 +7,7 @@ find_library(PahoMqttC_LIBRARY NAMES ${CONAN_LIBS_PahoMqttC} PATHS "${CONAN_LIB_
 
 set(PahoMqttC_FOUND TRUE)
 set(PahoMqttC_INCLUDE_DIRS ${PahoMqttC_INCLUDE_DIR})
-set(PahoMqttC_LIBRARIES ${PahoMqttC_LIBRARY})
+set(PahoMqttC_LIBRARIES ${CONAN_LIBS_PAHO-C})
 mark_as_advanced(PahoMqttC_LIBRARIES PahoMqttC_LIBRARY PahoMqttC_INCLUDE_DIR)
 
 if (NOT TARGET PahoMqttC::PahoMqttC)
