@@ -22,14 +22,14 @@ If you wish to report an issue or make a request for a package, please do so her
 
 ### Basic setup
 
-    $ conan install paho-cpp/1.0.0@conan/stable
+    $ conan install paho-cpp/1.0.1@conan/stable
 
 ### Project setup
 
 If you handle multiple dependencies in your project is better to add a *conanfile.txt*
 
     [requires]
-    paho-cpp/1.0.0@conan/stable
+    paho-cpp/1.0.1@conan/stable
 
     [generators]
     cmake
