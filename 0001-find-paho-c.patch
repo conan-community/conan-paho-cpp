@@ -1,0 +1,39 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index bfcf6bb..9603cf1 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -23,7 +23,6 @@
+ #     Frank Pagliughi - made the shared library optional
+ #*******************************************************************************/
+ 
+-find_package(PahoMqttC REQUIRED)
+ 
+ # --- The headers ---
+ 
+@@ -74,7 +73,7 @@ target_include_directories(paho-cpp-objs
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+         $<INSTALL_INTERFACE:include>
+     PRIVATE 
+-        ${PAHO_MQTT_C_INCLUDE_DIRS}
++        ${CONAN_INCLUDE_DIRS_PAHO-C}
+         src
+ )
+ 
+@@ -91,7 +90,7 @@ if(PAHO_BUILD_SHARED)
+     ## add dependencies to the shared library
+     target_link_libraries(paho-mqttpp3
+         PRIVATE ${LIBS_SYSTEM}
+-        PUBLIC PahoMqttC::PahoMqttC)
++        PUBLIC CONAN_PKG::paho-c)
+ 
+     # It would be nice to exort the include paths from the obj lib, but we
+     # get an export error. Perhaps in a future version?
+@@ -129,7 +128,7 @@ if(PAHO_BUILD_STATIC)
+     ## add dependencies to the shared library
+     target_link_libraries(paho-mqttpp3-static
+         PRIVATE ${LIBS_SYSTEM}
+-        PUBLIC PahoMqttC::PahoMqttC)
++        PUBLIC CONAN_PKG::paho-c)
+ 
+     target_include_directories(paho-mqttpp3-static PUBLIC
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
