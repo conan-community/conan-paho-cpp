@@ -20,8 +20,8 @@ class PahocppConan(ConanFile):
     default_options = {"shared": False, "SSL": False, "fPIC": True}
     generators = "cmake"
     exports = "LICENSE"
-    exports_sources = ["CMakeLists.txt", "PahoMqttCConfig.cmake"]
-    requires = "paho-c/1.2.0@conan/stable"
+    exports_sources = ["CMakeLists.txt", "0001-find-paho-c.patch"]
+    requires = "paho-c/1.3.0@conan/stable"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -48,11 +48,11 @@ class PahocppConan(ConanFile):
         cmake.definitions["PAHO_BUILD_STATIC"] = not self.options.shared
         cmake.definitions["PAHO_BUILD_SHARED"] = self.options.shared
         cmake.definitions["PAHO_WITH_SSL"] = self.options.SSL
-        cmake.definitions["CMAKE_PREFIX_PATH"] = self.build_folder
         cmake.configure()
         return cmake
 
     def build(self):
+        tools.patch(base_path=self._source_subfolder, patch_file="0001-find-paho-c.patch")
         cmake = self._configure_cmake()
         cmake.build()
 
