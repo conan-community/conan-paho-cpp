@@ -1,5 +1,5 @@
-project(test_package_cmake_paths)
 cmake_minimum_required(VERSION 2.8.11)
+project(test_package_cmake_paths)
 
 # Set compiler and linker flags (stdc++ version, arch, etc.).
 # Usually when using conan_paths, these are set by developer or build environment.
@@ -18,13 +18,16 @@ include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 
 find_package(PahoMqttCpp REQUIRED)
 find_package(Threads REQUIRED)
+link_directories("${CONAN_LIB_DIRS_PAHO-C}")
 
 add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/test_package.cpp)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME test_package)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED 11)
+target_include_directories(${PROJECT_NAME} PRIVATE "${CONAN_INCLUDE_DIRS_PAHO-C}")
+target_include_directories(${PROJECT_NAME} PRIVATE "${CONAN_INCLUDE_DIRS_PAHO-CPP}")
 if(PAHO_BUILD_STATIC)
-	target_link_libraries(${PROJECT_NAME} PahoMqttCpp::paho-mqttpp3-static)
+    target_link_libraries(${PROJECT_NAME} PahoMqttCpp::paho-mqttpp3-static ${CONAN_LIBS_PAHO-C})
 else()
-	target_link_libraries(${PROJECT_NAME} PahoMqttCpp::paho-mqttpp3)
+    target_link_libraries(${PROJECT_NAME} PahoMqttCpp::paho-mqttpp3 ${CONAN_LIBS_PAHO-C})
 endif()
 target_link_libraries(${PROJECT_NAME} Threads::Threads)
