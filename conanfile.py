@@ -20,17 +20,23 @@ class PahocppConan(ConanFile):
     default_options = {"shared": False, "SSL": False, "fPIC": True}
     generators = "cmake"
     exports = "LICENSE"
-    exports_sources = ["CMakeLists.txt", "0001-find-paho-c.patch"]
+    exports_sources = [
+        "CMakeLists.txt",
+        "0001-fix-cmake-module-path.patch",
+        "0002-fix-cmake-find-paho-mqtt-c-static.patch",
+        "0003-fix-paho-mqtt-cpp-config-cmake.patch"
+    ]
     requires = "paho-c/1.3.0@conan/stable"
 
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
-        self.options["paho-c"].SSL = self.options.SSL
 
     def configure(self):
         if self.settings.os == "Windows" and self.options.shared:
             raise ConanInvalidConfiguration("Paho cpp can not be built as shared on Windows.")
+        self.options["paho-c"].shared = self.options.shared
+        self.options["paho-c"].SSL = self.options.SSL
 
     @property
     def _source_subfolder(self):
@@ -52,7 +58,9 @@ class PahocppConan(ConanFile):
         return cmake
 
     def build(self):
-        tools.patch(base_path=self._source_subfolder, patch_file="0001-find-paho-c.patch")
+        tools.patch(base_path=self._source_subfolder, patch_file="0001-fix-cmake-module-path.patch")
+        tools.patch(base_path=self._source_subfolder, patch_file="0002-fix-cmake-find-paho-mqtt-c-static.patch")
+        tools.patch(base_path=self._source_subfolder, patch_file="0003-fix-paho-mqtt-cpp-config-cmake.patch")
         cmake = self._configure_cmake()
         cmake.build()
 
