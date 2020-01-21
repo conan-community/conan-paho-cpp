@@ -6,7 +6,7 @@ from conans.errors import ConanInvalidConfiguration
 
 class PahocppConan(ConanFile):
     name = "paho-cpp"
-    version = "1.0.1"
+    version = "1.1.0"
     license = "EPL-1.0"
     homepage = "https://github.com/eclipse/paho.mqtt.cpp"
     description = "The open-source client implementations of MQTT and MQTT-SN"
@@ -20,13 +20,8 @@ class PahocppConan(ConanFile):
     default_options = {"shared": False, "SSL": False, "fPIC": True}
     generators = "cmake"
     exports = "LICENSE"
-    exports_sources = [
-        "CMakeLists.txt",
-        "0001-fix-cmake-module-path.patch",
-        "0002-fix-cmake-find-paho-mqtt-c-static.patch",
-        "0003-fix-paho-mqtt-cpp-config-cmake.patch"
-    ]
-    requires = "paho-c/1.3.0@conan/stable"
+    exports_sources = [ "CMakeLists.txt" ]
+    requires = "paho-c/1.3.1@conan/stable"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -43,9 +38,11 @@ class PahocppConan(ConanFile):
         return "sources"
 
     def source(self):
-        sha256 = "42faf223bf78300eaaa8fa7d0e1bc039ff5de2890a392b83973f1be59aa68ea3"
-        tools.get("%s/archive/v%s.zip" % (self.homepage, self.version), sha256=sha256)
-        os.rename("paho.mqtt.cpp-%s" % self.version, self._source_subfolder)
+        sha256 = "61007f95f62074d7234062a91f45fb9f7d0512fed22776eae8f6155b24d849d4"
+        # Upstream released as 1.1
+        ver = self.version[0:self.version.rfind(".")]
+        tools.get("%s/archive/v%s.zip" % (self.homepage, ver), sha256=sha256)
+        os.rename("paho.mqtt.cpp-%s" % ver, self._source_subfolder)
 
     def _configure_cmake(self):
         cmake = CMake(self)
@@ -58,9 +55,6 @@ class PahocppConan(ConanFile):
         return cmake
 
     def build(self):
-        tools.patch(base_path=self._source_subfolder, patch_file="0001-fix-cmake-module-path.patch")
-        tools.patch(base_path=self._source_subfolder, patch_file="0002-fix-cmake-find-paho-mqtt-c-static.patch")
-        tools.patch(base_path=self._source_subfolder, patch_file="0003-fix-paho-mqtt-cpp-config-cmake.patch")
         cmake = self._configure_cmake()
         cmake.build()
 
